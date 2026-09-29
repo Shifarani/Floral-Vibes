@@ -58,27 +58,23 @@ function Home() {
   const [cartLoading, setCartLoading] = useState(null);
   
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch("http://localhost:5000/api/products");
+ useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      const response = await axiosInstance.get("/products");
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch products");
-        }
-
-        const data = await response.json();
-
-        setProducts(data.products || data);
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      } finally {
-        setLoading(false);
+      if (response.data.success) {
+        setProducts(response.data.products || []);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchProducts();
-  }, []);
+  fetchProducts();
+}, []);
 
     const addToWishlist = async (productId) => {
     const token = localStorage.getItem("token");
@@ -153,34 +149,20 @@ function Home() {
     }
   };
 
-  const categories = [
-    {
-      name: "Roses",
-      image: flower1,
-      color: "#fff0f4",
-    },
-    {
-      name: "Mixed Flowers",
-      image: flower2,
-      color: "#fff5e9",
-    },
-    {
-      name: "Sunflowers",
-      image: flower3,
-      color: "#fff9dc",
-    },
-    {
-      name: "Tulips",
-      image: flower4,
-      color: "#f7edff",
-    },
-    {
-      name: "Delight Flowers",
-      image: flower5,
-      color: "#edf9e9",
-    },
-  ];
-
+  const categories = Array.from(
+  new Map(
+    products
+      .filter((product) => product.category)
+      .map((product) => [
+        product.category,
+        {
+          name: product.category,
+          image: product.image,
+          color: "#fff0f4",
+        },
+      ])
+  ).values()
+);
   return (
     <>
       <style>{`
@@ -1004,14 +986,14 @@ function Home() {
 
           {categories.map((category) => (
 
-            <Link
-              to={`/shop?category=${category.name}`}
-              className="category-card"
-              key={category.name}
-              style={{
-                background: category.color,
-              }}
-            >
+           <Link
+            to={`/shop?category=${encodeURIComponent(category.name)}`}
+            className="category-card"
+            key={category.name}
+            style={{
+              background: category.color,
+            }}
+          >
 
               <div className="category-image">
 
@@ -1070,7 +1052,7 @@ function Home() {
     ) : products.length === 0 ? (
       <p>No products available.</p>
     ) : (
-      products.map((product) => (
+     products.slice(0, 4).map((product) => (
 
         <div
           className="product-card"
