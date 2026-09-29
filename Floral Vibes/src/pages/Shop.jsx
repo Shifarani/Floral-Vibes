@@ -126,6 +126,26 @@ useEffect(() => {
 }, []);
 
   const navigate = useNavigate();
+
+  const handleAddToCart = async (productId) => {
+  try {
+    const response = await axiosInstance.post("/cart/add", {
+      productId,
+      quantity: 1,
+    });
+
+    if (response.data.success) {
+      alert("Product added to cart 🌸");
+      navigate("/Cart");
+    }
+  } catch (error) {
+    console.log("Add to cart error:", error);
+
+    alert(
+      error.response?.data?.message || "Failed to add product to cart"
+    );
+  }
+};
   const [sortBy, setSortBy] = useState("default");
   const [wishlist, setWishlist] = useState([]);
 
@@ -325,9 +345,9 @@ useEffect(() => {
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
 
             {filteredProducts.map((product) => (
-              <div
+            <div
               key={product._id}
-              onClick={() => window.location.href = `/product/${product._id}`}
+              onClick={() => navigate(`/ProductDetails/${product._id}`)}
               className="group cursor-pointer overflow-hidden rounded-2xl"
             >
 
@@ -423,12 +443,16 @@ useEffect(() => {
 
                     </div>
 
-                    <button
-                      className="flex items-center gap-2 rounded-full bg-[#d94f70] px-4 py-2.5 text-xs font-semibold text-white transition duration-200 hover:bg-[#c94062] hover:shadow-md sm:text-sm"
-                    >
-                      <ShoppingCart size={16} />
-                      Add
-                    </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAddToCart(product._id);
+                    }}
+                    className="flex items-center gap-2 rounded-full bg-[#d94f70] px-4 py-2.5 text-xs font-semibold text-white transition duration-200 hover:bg-[#c94062] hover:shadow-md sm:text-sm"
+                  >
+                    <ShoppingCart size={16} />
+                    Add
+                  </button>
 
                   </div>
 
